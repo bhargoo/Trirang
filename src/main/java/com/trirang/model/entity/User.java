@@ -1,5 +1,7 @@
 package com.trirang.model.entity;
 
+import com.trirang.model.enums.shared.Role;
+import com.trirang.model.enums.shared.VerificationBadge;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -23,27 +25,30 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
+    @Column(name = "full_name", nullable = false)
+    private String name;
+
     @Email
     @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "phone_number")
+    private String phone;
+
     @NotBlank
     @Column(nullable = false)
     private String password;
 
-    @NotBlank
-    @Column(name = "full_name", nullable = false)
-    private String fullName;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @NotBlank
+    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role;
 
-    private String address;
+    @Column(name = "trust_score")
+    @Builder.Default
+    private Integer trustScore = 100;
 
     @Column(precision = 12, scale = 9)
     private BigDecimal latitude;
@@ -51,9 +56,21 @@ public class User {
     @Column(precision = 12, scale = 9)
     private BigDecimal longitude;
 
-    @Column(name = "trust_score")
+    @NotNull
+    @Column(name = "is_banned", nullable = false)
     @Builder.Default
-    private Integer trustScore = 100;
+    private Boolean isBanned = false;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_badge", nullable = false)
+    @Builder.Default
+    private VerificationBadge verificationBadge = VerificationBadge.NONE;
+
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
+    private String address;
 
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
