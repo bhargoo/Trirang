@@ -32,18 +32,21 @@ public class MarketplaceOrderService {
     private final UserRepository userRepository;
     private final PaymentService paymentService;
     private final MarketplaceOrderMapper orderMapper;
+    private final WalletService walletService;
 
     public MarketplaceOrderService(
             MarketplaceOrderRepository orderRepository,
             ListingRepository listingRepository,
             UserRepository userRepository,
             PaymentService paymentService,
-            MarketplaceOrderMapper orderMapper) {
+            MarketplaceOrderMapper orderMapper,
+            WalletService walletService) {
         this.orderRepository = orderRepository;
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.orderMapper = orderMapper;
+        this.walletService = walletService;
     }
 
     public OrderResponse createOrder(User buyer, CreateOrderRequest request) {
@@ -170,6 +173,19 @@ public class MarketplaceOrderService {
             seller.setTrustScore(Math.min(100, seller.getTrustScore() + 5));
             userRepository.save(seller);
             log.info("Updated trust score for seller {}: new trust score = {}", seller.getFullName(), seller.getTrustScore());
+        }
+
+        // Award TriCoins to seller for DELIVERY_REWARD
+        try {
+            walletService.creditCoins(
+                    seller,
+                    50,
+                    com.trirang.model.enums.TriCoinTransactionType.DELIVERY_REWARD,
+                    "Marketplace order successfully delivered to buyer",
+                    saved.getId()
+            );
+        } catch (Exception e) {
+            log.error("Failed to credit TriCoins for delivery reward", e);
         }
 
         return orderMapper.toResponse(saved);

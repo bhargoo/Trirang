@@ -34,6 +34,7 @@ public class TransformationRequestService {
     private final LocalFileStorageService fileStorageService;
     private final NotificationService notificationService;
     private final TrustScoreEngine trustScoreEngine;
+    private final WalletService walletService;
     private final TransformationRequestMapper transformationMapper;
 
     public TransformationRequestService(
@@ -43,6 +44,7 @@ public class TransformationRequestService {
             LocalFileStorageService fileStorageService,
             NotificationService notificationService,
             TrustScoreEngine trustScoreEngine,
+            WalletService walletService,
             TransformationRequestMapper transformationMapper) {
         this.transformationRepository = transformationRepository;
         this.userRepository = userRepository;
@@ -50,6 +52,7 @@ public class TransformationRequestService {
         this.fileStorageService = fileStorageService;
         this.notificationService = notificationService;
         this.trustScoreEngine = trustScoreEngine;
+        this.walletService = walletService;
         this.transformationMapper = transformationMapper;
     }
 
@@ -213,6 +216,21 @@ public class TransformationRequestService {
 
         TransformationRequest saved = transformationRepository.save(tr);
         notificationService.sendProgressNotification(saved.getId(), "Progress updated to: " + request.progress());
+
+        // Award TriCoins to artisan for TRANSFORMATION_REWARD
+        if (request.progress() == TransformationProgress.DELIVERED) {
+            try {
+                walletService.creditCoins(
+                        artisan,
+                        100,
+                        com.trirang.model.enums.TriCoinTransactionType.TRANSFORMATION_REWARD,
+                        "Approved transformation completion and delivery",
+                        saved.getId()
+                );
+            } catch (Exception e) {
+                log.error("Failed to credit TriCoins for transformation reward", e);
+            }
+        }
 
         return transformationMapper.toResponse(saved);
     }
