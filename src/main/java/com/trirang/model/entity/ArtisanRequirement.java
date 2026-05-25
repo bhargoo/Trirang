@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -29,31 +30,53 @@ public class ArtisanRequirement {
     @JoinColumn(name = "artisan_id", nullable = false)
     private User artisan;
 
-    @NotBlank
-    @Column(nullable = false)
+    @Column
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private ItemCategory category;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "fabric_type", nullable = false)
+    @Column(name = "fabric_type")
     private FabricType fabricType;
+
+    @Column
+    @Builder.Default
+    private String status = "OPEN";
+
+    // Phase 5A required fields
+    @NotBlank
+    @Column(nullable = false)
+    private String material;
 
     @NotNull
     @Min(1)
     @Column(name = "quantity_needed", nullable = false)
-    @Builder.Default
-    private Integer quantityNeeded = 1;
+    private Integer quantity;
 
     @NotBlank
     @Column(nullable = false)
-    private String status;
+    private String purpose;
+
+    @NotNull
+    @Column(nullable = false)
+    private Integer urgency;
+
+    @NotNull
+    @Column(name = "radius_km", nullable = false)
+    private Double radiusKm;
+
+    @NotNull
+    @Column(precision = 12, scale = 9, nullable = false)
+    private BigDecimal latitude;
+
+    @NotNull
+    @Column(precision = 12, scale = 9, nullable = false)
+    private BigDecimal longitude;
 
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -70,6 +93,12 @@ public class ArtisanRequirement {
             createdAt = now;
         }
         updatedAt = now;
+        if (status == null) {
+            status = "OPEN";
+        }
+        if (title == null) {
+            title = material + " for " + purpose;
+        }
     }
 
     @PreUpdate
@@ -77,3 +106,4 @@ public class ArtisanRequirement {
         updatedAt = Instant.now();
     }
 }
+
