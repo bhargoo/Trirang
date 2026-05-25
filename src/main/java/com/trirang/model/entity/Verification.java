@@ -9,13 +9,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "listings")
+@Table(name = "verifications")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Listing {
+public class Verification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
