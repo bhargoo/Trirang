@@ -21,7 +21,7 @@ public interface ListingMapper {
         return new SellerPreviewDTO(
                 seller.getFullName(),
                 seller.getTrustScore() != null ? seller.getTrustScore().doubleValue() : 0.0,
-                seller.getVerificationBadge() != com.trirang.model.enums.VerificationBadge.NONE
+                seller.getVerificationBadge() != com.trirang.model.enums.shared.VerificationBadge.NONE
         );
     }
 }

@@ -5,7 +5,7 @@ import com.trirang.model.entity.Listing;
 import com.trirang.model.entity.User;
 import com.trirang.model.enums.ListingStatus;
 import com.trirang.model.enums.ListingType;
-import com.trirang.model.enums.Role;
+import com.trirang.model.enums.shared.Role;
 import com.trirang.model.enums.shared.ItemCategory;
 import com.trirang.model.mapper.ListingMapper;
 import com.trirang.repository.ListingRepository;
@@ -216,21 +216,21 @@ public class ListingService {
             throw new IllegalArgumentException("Your trust score is too low to post to the marketplace");
         }
 
-        String roleStr = seller.getRole();
+        Role roleVal = seller.getRole();
 
         if (type == ListingType.THRIFT) {
-            if (!Role.DONOR.name().equals(roleStr) && !Role.THRIFT_USER.name().equals(roleStr)) {
+            if (roleVal != Role.DONOR && roleVal != Role.THRIFT_USER) {
                 throw new IllegalArgumentException("Only users with role DONOR or THRIFT_USER can post THRIFT listings");
             }
         } else if (type == ListingType.ARTISAN_PRODUCT) {
-            if (!Role.ARTISAN.name().equals(roleStr)) {
+            if (roleVal != Role.ARTISAN) {
                 throw new IllegalArgumentException("Only users with role ARTISAN can post ARTISAN_PRODUCT listings");
             }
         }
     }
 
     private void validateOwnershipOrAdmin(Listing listing, User currentUser) {
-        if (Role.ADMIN.name().equals(currentUser.getRole())) {
+        if (currentUser.getRole() == Role.ADMIN) {
             return;
         }
         if (!listing.getSeller().getId().equals(currentUser.getId())) {

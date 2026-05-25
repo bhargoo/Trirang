@@ -51,7 +51,7 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public Page<Listing> getPendingListings(Pageable pageable) {
-        return listingRepository.findByStatus(ReviewStatus.PENDING, pageable);
+        return listingRepository.findByStatus(com.trirang.model.enums.ListingStatus.ACTIVE, pageable);
     }
 
     @Transactional(readOnly = true)

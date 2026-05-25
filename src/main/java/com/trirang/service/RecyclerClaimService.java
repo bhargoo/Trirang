@@ -7,7 +7,7 @@ import com.trirang.model.entity.Donation;
 import com.trirang.model.entity.RecyclerClaim;
 import com.trirang.model.entity.User;
 import com.trirang.model.enums.DonationStatus;
-import com.trirang.model.enums.Role;
+import com.trirang.model.enums.shared.Role;
 import com.trirang.model.mapper.DonationMapper;
 import com.trirang.model.mapper.RecyclerClaimMapper;
 import com.trirang.repository.DonationRepository;
@@ -86,8 +86,8 @@ public class RecyclerClaimService {
         log.info("User {} claiming donation ID: {}", user.getId(), donationId);
 
         // Role verification
-        String userRole = user.getRole();
-        if (!Role.RECYCLER.name().equals(userRole) && !Role.NGO.name().equals(userRole)) {
+        Role userRole = user.getRole();
+        if (userRole != Role.RECYCLER && userRole != Role.NGO) {
             throw new IllegalArgumentException("Only users with RECYCLER or NGO role can claim recyclable donations");
         }
 

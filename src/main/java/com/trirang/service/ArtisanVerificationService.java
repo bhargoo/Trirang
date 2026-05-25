@@ -3,8 +3,8 @@ package com.trirang.service;
 import com.trirang.model.dto.ArtisanVerificationResponse;
 import com.trirang.model.entity.ArtisanVerification;
 import com.trirang.model.entity.User;
-import com.trirang.model.enums.Role;
-import com.trirang.model.enums.VerificationBadge;
+import com.trirang.model.enums.shared.Role;
+import com.trirang.model.enums.shared.VerificationBadge;
 import com.trirang.model.enums.VerificationStatus;
 import com.trirang.repository.ArtisanVerificationRepository;
 import com.trirang.repository.UserRepository;
@@ -44,7 +44,7 @@ public class ArtisanVerificationService {
             List<MultipartFile> workspaceImageFiles) {
 
         // Validate role is ARTISAN
-        if (!Role.ARTISAN.name().equals(artisan.getRole())) {
+        if (artisan.getRole() != Role.ARTISAN) {
             throw new IllegalArgumentException("Only users with ARTISAN role can submit verification");
         }
 
