@@ -30,16 +30,19 @@ public class RecyclerClaimService {
     private final DonationRepository donationRepository;
     private final RecyclerClaimMapper claimMapper;
     private final DonationMapper donationMapper;
+    private final WalletService walletService;
 
     public RecyclerClaimService(
             RecyclerClaimRepository claimRepository,
             DonationRepository donationRepository,
             RecyclerClaimMapper claimMapper,
-            DonationMapper donationMapper) {
+            DonationMapper donationMapper,
+            WalletService walletService) {
         this.claimRepository = claimRepository;
         this.donationRepository = donationRepository;
         this.claimMapper = claimMapper;
         this.donationMapper = donationMapper;
+        this.walletService = walletService;
     }
 
     @Transactional(readOnly = true)
@@ -119,6 +122,19 @@ public class RecyclerClaimService {
         // Update the donation status to RECYCLED
         donation.setStatus(DonationStatus.RECYCLED);
         donationRepository.save(donation);
+
+        // Award TriCoins to donor for PICKUP_REWARD
+        try {
+            walletService.creditCoins(
+                    donation.getDonor(),
+                    30,
+                    com.trirang.model.enums.TriCoinTransactionType.PICKUP_REWARD,
+                    "Donation picked up and recycled",
+                    savedClaim.getId()
+            );
+        } catch (Exception e) {
+            log.error("Failed to credit TriCoins for pickup reward", e);
+        }
 
         log.info("Donation ID: {} claimed successfully by user ID: {}. Stored claim ID: {}", donationId, user.getId(), savedClaim.getId());
 
