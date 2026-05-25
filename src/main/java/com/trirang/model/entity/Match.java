@@ -1,7 +1,7 @@
 package com.trirang.model.entity;
 
+import com.trirang.model.enums.MatchStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -36,9 +36,10 @@ public class Match {
     @Column(name = "match_score", precision = 5, scale = 2, nullable = false)
     private BigDecimal matchScore;
 
-    @NotBlank
+    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private MatchStatus status;
 
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -55,6 +56,9 @@ public class Match {
             createdAt = now;
         }
         updatedAt = now;
+        if (status == null) {
+            status = MatchStatus.PENDING;
+        }
     }
 
     @PreUpdate
@@ -62,3 +66,4 @@ public class Match {
         updatedAt = Instant.now();
     }
 }
+
