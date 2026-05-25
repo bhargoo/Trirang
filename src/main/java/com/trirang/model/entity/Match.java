@@ -5,12 +5,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "matches")
+@Table(
+    name = "matches",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"donation_id", "artisan_requirement_id"}, name = "uc_matches_donation_requirement")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,23 +27,37 @@ public class Match {
     private UUID id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "donation_id", nullable = false)
     private Donation donation;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "requirement_id", nullable = false)
-    private ArtisanRequirement requirement;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artisan_requirement_id", nullable = false)
+    private ArtisanRequirement artisanRequirement;
 
     @NotNull
-    @Column(name = "match_score", precision = 5, scale = 2, nullable = false)
-    private BigDecimal matchScore;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "donor_id", nullable = false)
+    private User donor;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artisan_id", nullable = false)
+    private User artisan;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private MatchStatus status;
+
+    @NotNull
+    @Column(name = "match_score", nullable = false)
+    private Double matchScore;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -66,4 +84,3 @@ public class Match {
         updatedAt = Instant.now();
     }
 }
-
