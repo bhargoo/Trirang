@@ -1,5 +1,6 @@
 package com.trirang.model.entity;
 
+import com.trirang.model.enums.VerificationBadge;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -55,8 +56,14 @@ public class User {
     @Builder.Default
     private Integer trustScore = 100;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_badge", nullable = false)
+    @Builder.Default
+    private VerificationBadge verificationBadge = VerificationBadge.NONE;
+
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
+
     private Instant createdAt;
 
     @NotNull
