@@ -42,8 +42,10 @@ public class SecurityConfig {
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/ws/**",
-                    "/api/v1/payments/webhook"
+                    "/api/v1/payments/webhook",
+                    "/actuator/**"
                 ).permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
