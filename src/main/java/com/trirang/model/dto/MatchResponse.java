@@ -2,7 +2,6 @@ package com.trirang.model.dto;
 
 import com.trirang.model.enums.MatchStatus;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,12 +9,15 @@ public record MatchResponse(
     UUID id,
     UUID donationId,
     String donationTitle,
+    UUID artisanRequirementId,
+    String artisanRequirementMaterial,
+    UUID donorId,
     String donorName,
-    UUID requirementId,
-    String requirementMaterial,
+    UUID artisanId,
     String artisanName,
-    BigDecimal matchScore,
     MatchStatus status,
+    Double matchScore,
+    Long version,
     Instant createdAt,
     Instant updatedAt
 ) {}

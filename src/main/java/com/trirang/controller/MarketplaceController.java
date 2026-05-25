@@ -1,86 +1,76 @@
 package com.trirang.controller;
 
 import com.trirang.model.dto.MatchResponse;
-import com.trirang.model.entity.ArtisanRequirement;
-import com.trirang.model.entity.Donation;
 import com.trirang.model.entity.User;
-import com.trirang.model.enums.Role;
-import com.trirang.repository.ArtisanRequirementRepository;
-import com.trirang.repository.DonationRepository;
 import com.trirang.repository.UserRepository;
 import com.trirang.service.MatchmakingEngine;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/marketplace")
+@RequestMapping("/api/marketplace/matches")
 public class MarketplaceController {
 
     private final MatchmakingEngine matchmakingEngine;
     private final UserRepository userRepository;
-    private final DonationRepository donationRepository;
-    private final ArtisanRequirementRepository requirementRepository;
 
-    public MarketplaceController(
-            MatchmakingEngine matchmakingEngine,
-            UserRepository userRepository,
-            DonationRepository donationRepository,
-            ArtisanRequirementRepository requirementRepository) {
+    public MarketplaceController(MatchmakingEngine matchmakingEngine, UserRepository userRepository) {
         this.matchmakingEngine = matchmakingEngine;
         this.userRepository = userRepository;
-        this.donationRepository = donationRepository;
-        this.requirementRepository = requirementRepository;
     }
 
-    @PostMapping("/matches/{id}/accept")
-    public ResponseEntity<MatchResponse> acceptMatch(@PathVariable("id") UUID id) {
-        log.info("Request to accept match ID: {}", id);
+    @GetMapping
+    public ResponseEntity<Page<MatchResponse>> getMyMatches(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "direction", defaultValue = "DESC") String direction) {
+
+        log.info("Received request to fetch matches page: {}, size: {}, sort: {}, direction: {}", page, size, sortBy, direction);
+        
         User currentUser = getCurrentUser();
-        MatchResponse response = matchmakingEngine.acceptMatch(id, currentUser);
+        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<MatchResponse> responses = matchmakingEngine.getMyMatches(currentUser, pageable);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<MatchResponse> acceptMatch(
+            @PathVariable("id") UUID id,
+            @RequestParam(value = "version", required = false) Long version) {
+
+        log.info("Received request to accept match ID: {} with version: {}", id, version);
+        User currentUser = getCurrentUser();
+        MatchResponse response = matchmakingEngine.acceptMatch(id, currentUser, version);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/matches/{id}/reject")
+    @PostMapping("/{id}/reject")
     public ResponseEntity<MatchResponse> rejectMatch(@PathVariable("id") UUID id) {
-        log.info("Request to reject match ID: {}", id);
+        log.info("Received request to reject match ID: {}", id);
         User currentUser = getCurrentUser();
         MatchResponse response = matchmakingEngine.rejectMatch(id, currentUser);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/matches")
-    public ResponseEntity<List<MatchResponse>> getMatches() {
-        log.info("Request to get matches for current user");
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<MatchResponse> completeMatch(@PathVariable("id") UUID id) {
+        log.info("Received request to complete match ID: {}", id);
         User currentUser = getCurrentUser();
-        List<MatchResponse> responses = matchmakingEngine.getMatchesForUser(currentUser);
-        return ResponseEntity.ok(responses);
-    }
-
-    @PostMapping("/matchmaking/run")
-    public ResponseEntity<Void> runMatchmaking() {
-        log.info("Manual matchmaking run requested");
-        User currentUser = getCurrentUser();
-        
-        if (Role.ARTISAN.name().equals(currentUser.getRole())) {
-            List<ArtisanRequirement> requirements = requirementRepository.findByArtisanId(currentUser.getId());
-            for (ArtisanRequirement req : requirements) {
-                matchmakingEngine.runMatchmakingForRequirement(req);
-            }
-        } else {
-            List<Donation> donations = donationRepository.findByDonorId(currentUser.getId());
-            for (Donation don : donations) {
-                matchmakingEngine.runMatchmakingForDonation(don);
-            }
-        }
-        
-        return ResponseEntity.noContent().build();
+        MatchResponse response = matchmakingEngine.completeMatch(id, currentUser);
+        return ResponseEntity.ok(response);
     }
 
     private User getCurrentUser() {
