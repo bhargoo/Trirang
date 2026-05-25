@@ -1,5 +1,3 @@
-ALTER TABLE users ADD COLUMN verification_badge VARCHAR(50) DEFAULT 'NONE' NOT NULL;
-
 CREATE TABLE artisan_verifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     artisan_id UUID NOT NULL,
