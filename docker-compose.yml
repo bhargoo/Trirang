@@ -10,6 +10,11 @@ services:
       POSTGRES_DB: ${DB_NAME:-trirang}
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trirang"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -20,6 +25,9 @@ services:
     container_name: trirang-redis
     ports:
       - "${REDIS_PORT:-6379}:6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - redis_data:/data
     networks:
