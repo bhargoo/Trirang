@@ -5,6 +5,7 @@ import com.trirang.model.dto.DonationResponse;
 import com.trirang.model.entity.Donation;
 import com.trirang.model.entity.User;
 import com.trirang.model.enums.DonationStatus;
+import com.trirang.model.mapper.DonationMapper;
 import com.trirang.repository.DonationRepository;
 import com.trirang.storage.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,15 @@ public class DonationService {
 
     private final DonationRepository donationRepository;
     private final FileStorageService fileStorageService;
+    private final DonationMapper donationMapper;
 
-    public DonationService(DonationRepository donationRepository, FileStorageService fileStorageService) {
+    public DonationService(
+            DonationRepository donationRepository,
+            FileStorageService fileStorageService,
+            DonationMapper donationMapper) {
         this.donationRepository = donationRepository;
         this.fileStorageService = fileStorageService;
+        this.donationMapper = donationMapper;
     }
 
     public DonationResponse createDonation(User donor, DonationRequest request, MultipartFile imageFile) {
@@ -60,20 +66,20 @@ public class DonationService {
         Donation saved = donationRepository.save(donation);
         log.info("Donation created successfully with ID: {} and status: {}", saved.getId(), saved.getStatus());
 
-        return mapToResponse(saved);
+        return donationMapper.toResponse(saved);
     }
 
     @Transactional(readOnly = true)
     public DonationResponse getDonation(UUID id) {
         Donation donation = donationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Donation not found with ID: " + id));
-        return mapToResponse(donation);
+        return donationMapper.toResponse(donation);
     }
 
     @Transactional(readOnly = true)
     public List<DonationResponse> getMyDonations(User donor) {
         return donationRepository.findByDonorId(donor.getId()).stream()
-                .map(this::mapToResponse)
+                .map(donationMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -113,27 +119,5 @@ public class DonationService {
         if (file.getSize() > 10 * 1024 * 1024) { // 10MB limit
             throw new IllegalArgumentException("Image size exceeds the maximum limit of 10MB");
         }
-    }
-
-    private DonationResponse mapToResponse(Donation donation) {
-        return new DonationResponse(
-                donation.getId(),
-                donation.getDonor().getId(),
-                donation.getDonor().getFullName(),
-                donation.getTitle(),
-                donation.getDescription(),
-                donation.getCondition(),
-                donation.getCategory(),
-                donation.getFabricType(),
-                donation.getClassification(),
-                donation.getImagePath(), // using imagePath as imageUrl
-                donation.getQrCodePath(),
-                donation.getLatitude(),
-                donation.getLongitude(),
-                donation.getStatus(),
-                donation.getAiAnalysisJson(),
-                donation.getCreatedAt(),
-                donation.getUpdatedAt()
-        );
     }
 }
