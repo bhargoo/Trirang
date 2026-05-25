@@ -18,3 +18,41 @@ logging:
     com.trirang: DEBUG
     org.hibernate.SQL: DEBUG
     org.springframework.security: DEBUG
+
+groq:
+  api:
+    url: https://api.groq.com/openai/v1
+    key: ${GROQ_API_KEY:gsk_placeholder}
+    model: llama-3.2-11b-vision-preview
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      groqService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      groqService:
+        maxAttempts: 3
+        waitDuration: 2000
+
+razorpay:
+  key:
+    id: ${RAZORPAY_KEY_ID:rzp_test_placeholder}
+    secret: ${RAZORPAY_KEY_SECRET:rzp_test_secret_placeholder}
+  webhook:
+    secret: ${RAZORPAY_WEBHOOK_SECRET:rzp_webhook_secret_placeholder}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
