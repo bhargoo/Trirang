@@ -12,6 +12,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -56,6 +61,9 @@ public class User {
     @Column(precision = 12, scale = 9)
     private BigDecimal longitude;
 
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point location;
+
     @NotNull
     @Column(name = "is_banned", nullable = false)
     @Builder.Default
@@ -87,10 +95,19 @@ public class User {
             createdAt = now;
         }
         updatedAt = now;
+        syncLocation();
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
+        syncLocation();
+    }
+
+    private void syncLocation() {
+        if (latitude != null && longitude != null) {
+            GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+            this.location = geometryFactory.createPoint(new Coordinate(longitude.doubleValue(), latitude.doubleValue()));
+        }
     }
 }
