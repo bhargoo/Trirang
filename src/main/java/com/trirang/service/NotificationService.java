@@ -74,4 +74,11 @@ public class NotificationService {
                     notificationRepository.save(notif);
                 });
     }
+
+    /**
+     * Stubs/logs transformation and marketplace progress notifications.
+     */
+    public void sendProgressNotification(UUID requestId, String message) {
+        log.info("[NOTIFICATION] Transformation request ID {}: {}", requestId, message);
+    }
 }

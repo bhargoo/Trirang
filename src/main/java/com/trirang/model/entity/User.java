@@ -110,4 +110,8 @@ public class User {
             this.location = geometryFactory.createPoint(new Coordinate(longitude.doubleValue(), latitude.doubleValue()));
         }
     }
+
+    public String getFullName() {
+        return name;
+    }
 }
