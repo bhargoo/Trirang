@@ -1,5 +1,6 @@
 package com.trirang.model.entity;
 
+import com.trirang.model.enums.DonationStatus;
 import com.trirang.model.enums.shared.Classification;
 import com.trirang.model.enums.shared.FabricType;
 import com.trirang.model.enums.shared.ItemCategory;
@@ -7,9 +8,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -36,6 +40,9 @@ public class Donation {
 
     private String description;
 
+    @Column(name = "item_condition")
+    private String condition;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,15 +58,21 @@ public class Donation {
     @Column(nullable = false)
     private Classification classification;
 
-    @NotBlank
+    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private DonationStatus status;
+
+    @Column(columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> aiAnalysisJson;
 
     @Column(name = "qr_code_path")
     private String qrCodePath;
 
     @Column(name = "image_path")
     private String imagePath;
+
 
     @Column(precision = 12, scale = 9)
     private BigDecimal latitude;
