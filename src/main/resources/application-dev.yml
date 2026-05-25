@@ -40,3 +40,10 @@ resilience4j:
       groqService:
         maxAttempts: 3
         waitDuration: 2000
+
+razorpay:
+  key:
+    id: ${RAZORPAY_KEY_ID:rzp_test_placeholder}
+    secret: ${RAZORPAY_KEY_SECRET:rzp_test_secret_placeholder}
+  webhook:
+    secret: ${RAZORPAY_WEBHOOK_SECRET:rzp_webhook_secret_placeholder}
